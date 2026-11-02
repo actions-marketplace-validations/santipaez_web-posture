@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "web-posture"
+version = "0.1.0"
+description = "Passive web security posture checks: DNS policy, TLS, headers, cookies and exposed files. No exploitation, no port scanning."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools.packages.find]
+include = ["posture*"]
