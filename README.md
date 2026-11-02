@@ -53,6 +53,34 @@ aggregate reports as low.
 
 Each check also returns the fix, because a finding without a remediation is noise.
 
+## Use it as a GitHub Action
+
+The same checks run on every deploy, and the job fails when something high severity
+appears:
+
+```yaml
+name: posture
+on:
+  deployment_status:
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: santipaez/web-posture@v1
+        with:
+          domain: acme-shop.example
+          authorized: "true"          # required: the action refuses without it
+          reason: "my own production domain"
+          delay: "0.5"
+```
+
+The `authorized` input is enforced before anything else runs. A scheduled weekly check is
+the useful default: mail policy and certificates drift, and nobody notices until a
+certificate expires or a DMARC record is edited.
+
 ## Authorization
 
 The tool refuses to run without an explicit flag:

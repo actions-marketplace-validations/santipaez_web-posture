@@ -1,0 +1,29 @@
+name: action-selftest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  refuses-without-authorization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Attempt a scan without authorization
+        id: attempt
+        continue-on-error: true
+        uses: ./
+        with:
+          domain: example.com
+          authorized: "false"
+          reason: "self test"
+
+      - name: Assert the action refused
+        run: |
+          if [ "${{ steps.attempt.outcome }}" != "failure" ]; then
+            echo "::error::the action started a scan without authorized: true"
+            exit 1
+          fi
+          echo "the action refused, as intended"

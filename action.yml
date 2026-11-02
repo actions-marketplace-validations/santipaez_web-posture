@@ -1,0 +1,50 @@
+name: web-posture
+description: Passive security posture checks for a domain. Fails the job when a high severity finding is present.
+author: santipaez
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  domain:
+    description: Host to check, for example example.com
+    required: true
+  authorized:
+    description: Set to "true" to confirm you own the host or have written permission. The scan refuses to run otherwise.
+    required: true
+  reason:
+    description: Who authorised this scan. It is printed in the report so the run is auditable.
+    required: true
+  delay:
+    description: Seconds between checks. Leave the default unless you have a reason.
+    required: false
+    default: "0.5"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Check authorization
+      shell: bash
+      env:
+        AUTHORIZED: ${{ inputs.authorized }}
+      run: |
+        if [ "$AUTHORIZED" != "true" ]; then
+          echo "::error::web-posture requires authorized: true, set only for a host you own or have written permission to test."
+          exit 2
+        fi
+
+    - name: Run posture check
+      shell: bash
+      env:
+        DOMAIN: ${{ inputs.domain }}
+        REASON: ${{ inputs.reason }}
+        DELAY: ${{ inputs.delay }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        cd "$ACTION_PATH"
+        python -m posture "$DOMAIN" --authorized --reason "$REASON" --delay "$DELAY"
